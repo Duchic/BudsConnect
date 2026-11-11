@@ -70,15 +70,48 @@ internal static class Program
         var settings = new SettingsWindow(vm);
         var tray = new TrayWindow(vm);
         Check(window.Content != null && settings.Content != null && tray.Content != null, "All WPF windows load");
+        foreach (bool dark in new[] { false, true, false })
+        {
+            ThemePalette.Apply(app.Resources, dark);
+            foreach (var view in new Window[] { window, settings, tray })
+            {
+                var expected = ((SolidColorBrush)app.Resources["Surface"]).Color;
+                Check(view.Background is SolidColorBrush surface && surface.Color == expected,
+                    $"{view.GetType().Name} uses the {(dark ? "dark" : "light")} application background");
+                Check(Contrast(((SolidColorBrush)view.Foreground).Color, expected) >= 4.5,
+                    $"{view.GetType().Name} text contrasts against its actual background");
+                RenderWindow(view, view == window ? 424 : view == settings ? 404 : 308,
+                    view == window ? 611 : view == settings ? 495 : 320,
+                    $"{view.GetType().Name}-{(dark ? "dark" : "light")}");
+            }
+            foreach (string text in new[] { "Text", "Muted", "Accent" })
+                foreach (string surface in new[] { "Surface", "Soft", "Selected" })
+                    Check(Contrast(((SolidColorBrush)app.Resources[text]).Color, ((SolidColorBrush)app.Resources[surface]).Color) >= 4.5,
+                        $"{text} on {surface} has readable contrast (dark={dark})");
+            var combo = (System.Windows.Controls.ComboBox)settings.FindName("ThemeBox");
+            Check(Contrast(((SolidColorBrush)combo.Foreground).Color, ((SolidColorBrush)combo.Background).Color) >= 4.5,
+                "Native appearance picker has matching text and surface colors");
+        }
+        vm.Stop();
+    }
+    private static double Contrast(Color a, Color b)
+    {
+        static double Channel(byte value) { double c = value / 255d; return c <= 0.04045 ? c / 12.92 : Math.Pow((c + 0.055) / 1.055, 2.4); }
+        static double Light(Color c) => 0.2126 * Channel(c.R) + 0.7152 * Channel(c.G) + 0.0722 * Channel(c.B);
+        double x = Light(a), y = Light(b);
+        return (Math.Max(x, y) + 0.05) / (Math.Min(x, y) + 0.05);
+    }
+    private static void RenderWindow(Window window, int width, int height, string name)
+    {
         var root = (FrameworkElement)window.Content!;
-        root.Measure(new Size(424, 611)); root.Arrange(new Rect(0, 0, 424, 611)); root.UpdateLayout();
+        root.Measure(new Size(width, height)); root.Arrange(new Rect(0, 0, width, height)); root.UpdateLayout();
         var drawing = new DrawingVisual();
         using (var dc = drawing.RenderOpen())
-        { dc.DrawRectangle((Brush)app.Resources["Surface"], null, new Rect(0, 0, 424, 611)); }
-        var bitmap = new RenderTargetBitmap(636, 917, 144, 144, PixelFormats.Pbgra32); bitmap.Render(drawing); bitmap.Render(root);
-        string path = Path.GetFullPath("TestResults/main-window.png"); Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        { dc.DrawRectangle(window.Background, null, new Rect(0, 0, width, height)); }
+        var bitmap = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32); bitmap.Render(drawing); bitmap.Render(root);
+        string path = Path.GetFullPath($"TestResults/{name}.png"); Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         using var file = File.Create(path); var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap)); encoder.Save(file);
-        Console.WriteLine("UI render: " + path); vm.Stop();
+        Console.WriteLine("UI render: " + path);
     }
     private static void Probe()
     {

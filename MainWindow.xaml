@@ -1,4 +1,4 @@
-<Window x:Class="BudsConnect.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="BudsConnect" Width="440" Height="650" MinWidth="400" MinHeight="540" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize">
+<Window Style="{StaticResource AppWindow}" x:Class="BudsConnect.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="BudsConnect" Width="440" Height="650" MinWidth="400" MinHeight="540" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize">
  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
  <StackPanel Margin="26,24,26,22">
   <TextBlock Text="{Binding Name}" FontSize="27" FontWeight="SemiBold"/>
@@ -20,5 +20,6 @@
  </StackPanel>
  </ScrollViewer>
 </Window>
+
 
 

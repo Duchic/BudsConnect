@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Windows;
-using System.Windows.Media;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using BudsConnect.Services;
@@ -45,10 +44,7 @@ public partial class App : Application
         using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
         bool dark = preferences.Theme == "Dark" || (preferences.Theme == "System" && key?.GetValue("AppsUseLightTheme") is int apps && apps == 0);
         darkTaskbar = key?.GetValue("SystemUsesLightTheme") is int system && system == 0;
-        string[] names = { "Surface", "Text", "Muted", "Soft", "Line", "Accent", "Selected" };
-        string[] light = { "#FCFCFD", "#20252C", "#646B76", "#F0F2F6", "#E4E7ED", "#315EE5", "#E9EFFF" };
-        string[] night = { "#24272D", "#F1F3F6", "#ABB2BF", "#30353E", "#383D46", "#A5BAFF", "#354364" };
-        for (int i = 0; i < names.Length; i++) Resources[names[i]] = new SolidColorBrush((Color)ColorConverter.ConvertFromString((dark ? night : light)[i]));
+        ThemePalette.Apply(Resources, dark);
         if (model != null) tray?.Update(model.State, false, darkTaskbar);
     }
     private void OnUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)

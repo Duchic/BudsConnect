@@ -38,7 +38,7 @@ dotnet run --project tests/BudsConnect.Tests.csproj -c Release -- --render
 dotnet publish BudsConnect.csproj -c Release --no-restore --self-contained false -o dist/BudsConnect
 ```
 
-Testovací konzole ověřuje známý CRC vektor, referenční Samsung CRC, fragmentaci dat na každé hranici, sloučené zprávy, poškození a obnovení proudu, délky, hodnoty baterií, nedostupné hodnoty a změny ANC. Volba `--render` načte všechna okna WPF a vykreslí hlavní okno bez zobrazení na ploše do `TestResults/main-window.png`.
+Testovací konzole ověřuje známý CRC vektor, referenční Samsung CRC, fragmentaci dat na každé hranici, sloučené zprávy, poškození a obnovení proudu, délky, hodnoty baterií, nedostupné hodnoty a změny ANC. Volba `--render` ověří pozadí a kontrast všech oken při přepínání motivů a vykreslí je bez zobrazení na ploše do `TestResults/*Window-light.png` a `TestResults/*Window-dark.png`.
 
 ### Ruční test na Galaxy Buds3
 

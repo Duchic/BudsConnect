@@ -9,7 +9,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets/BudsConnect.ico</ApplicationIcon>
     <AssemblyName>BudsConnect</AssemblyName>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <RestorePackagesPath>$(MSBuildThisFileDirectory).packages</RestorePackagesPath>
   </PropertyGroup>
   <ItemGroup>

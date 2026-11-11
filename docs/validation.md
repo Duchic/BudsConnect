@@ -1,5 +1,15 @@
 # Ověření první verze (2026-11-11)
 
+## Oprava motivů 0.1.1
+
+- Regresní kontrola před opravou selhala: skutečné pozadí MainWindow nepoužívalo aplikační paletu. Implicitní styl Window se neuplatňoval na odvozená okna, zatímco text přebíral tmavé barvy.
+- Všechna tři okna nyní explicitně používají společný styl AppWindow. Text dědí barvu svého ovládacího prvku; nativní seznam vzhledu používá odpovídající systémové barvy.
+- Nedostupná tlačítka již nesnižují průhlednost textu. Zůstávají neaktivní, ale čitelná.
+- 83 kontrol prošlo, včetně přepnutí světlý → tmavý → světlý, skutečného pozadí všech oken a kontrastu textů alespoň 4,5 : 1.
+- Vizuálně ověřeno hlavní okno, nastavení a rychlý panel v obou motivech. Vykreslení nyní používá skutečné pozadí okna; předchozí pomocné vyplnění obrázku paletou tuto chybu zakrývalo.
+
+## Původní ověření
+
 - Release sestavení: bez chyb a upozornění.
 - Automatické testy: CRC proti standardnímu vektoru a publikované Samsung zprávě; každá hranice rozdělení rámce; zprávy po jednotlivých bajtech; více zpráv v jednom čtení; poškozená kontrolní suma; zotavení po chybném rámci; fragmenty; příznak odpovědi; krátký a rozšířený stav; neznámé hodnoty; odpojení; identifikace modelu; srozumitelná chyba obsazeného socketu.
 - Načtena okna hlavního přehledu, nastavení a rychlého panelu; hlavní okno vykresleno a vizuálně zkontrolováno. Vykreslovací test odhalil a pomohl opravit obousměrnou vazbu ProgressBar na vlastnost jen pro čtení.
