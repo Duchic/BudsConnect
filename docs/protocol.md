@@ -17,6 +17,8 @@ Service UUID: `2e73a4ad-332d-41fc-90e2-16bef06523f2`.
 Frame: `FD size-low size-high|flags id payload crc-low crc-high DD`.
 Size includes ID and CRC, not delimiters/header. The size field has ten bits. CRC-16/XMODEM: polynomial 0x1021, initial 0, calculated over ID + payload. Response bit: 0x1000; fragment bit: 0x2000 (ignored by this client).
 
+Bits 14–15 in received Buds3 headers vary between packets and must not cause a frame to be rejected. Actual ANC replies captured from the user's Buds3: `FD05904278011CE2DD` (on) and `FD05D04278003DF2DD` (off). Their headers are 0x9005 and 0xD005; both lengths are 5. The former 0xCC00 invalid-header mask incorrectly rejected these packets before ACK decoding. The parser now tolerates these high bits while retaining length, CRC and end-marker validation.
+
 Read messages:
 
 | ID | Fields (zero-based payload offsets) |

@@ -47,7 +47,9 @@ public sealed class BudsProtocol
             if (buffer[0] != 0xFD) { buffer.RemoveAt(0); continue; }
             int header = buffer[1] | buffer[2] << 8;
             int size = header & 0x3FF;
-            if (size < 3 || (header & 0xCC00) != 0) { buffer.RemoveAt(0); continue; }
+            // Bits 14–15 vary between consecutive Buds3 packets. They are not
+            // size bits or invalid-frame flags (e.g. real ACK headers 0x9005/0xD005).
+            if (size < 3 || (header & 0x0C00) != 0) { buffer.RemoveAt(0); continue; }
             if (buffer.Count < size + 4) break;
             byte[] frame = buffer.GetRange(0, size + 4).ToArray();
             ushort expected = (ushort)(frame[^3] | frame[^2] << 8);

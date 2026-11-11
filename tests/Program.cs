@@ -49,6 +49,24 @@ internal static class Program
             Check(BudsProtocol.Apply(state, new(0x77, new byte[] { 3 }, false), now).Anc == null, "Unknown mode not misrepresented as ANC off");
             var ackOn = new BudsPacket(0x42, new byte[] { 0x78, 1 }, true);
             var ackOff = new BudsPacket(0x42, new byte[] { 0x78, 0 }, true);
+            // Actual Buds3 frames captured during the failing ANC toggle (no identifiers).
+            byte[] capturedOn = Convert.FromHexString("FD05904278011CE2DD");
+            byte[] capturedOff = Convert.FromHexString("FD05D04278003DF2DD");
+            foreach (byte[] captured in new[] { capturedOn, capturedOff })
+                for (int split = 0; split <= captured.Length; split++)
+                {
+                    var parser = new BudsProtocol();
+                    var decoded = parser.Feed(captured.AsSpan(0, split)).Concat(parser.Feed(captured.AsSpan(split))).ToArray();
+                    bool desired = captured == capturedOn;
+                    Check(decoded.Length == 1 && BudsProtocol.AncConfirmation(decoded[0], desired) == true &&
+                        BudsProtocol.Apply(state, decoded[0], now).Anc == desired,
+                        $"Real Buds3 ACK header survives streaming split {split}, ANC={desired}");
+                }
+            for (int sequence = 0; sequence < 4; sequence++)
+            {
+                var sequenced = (byte[])capturedOn.Clone(); sequenced[2] = (byte)(0x10 | sequence << 6);
+                Check(new BudsProtocol().Feed(sequenced).Count == 1, $"All high header bit combinations accepted: {sequence}");
+            }
             Check(BudsProtocol.Apply(state, ackOn, now).Anc == true, "Universal ACK reports ANC on");
             Check(BudsProtocol.Apply(state, ackOff, now).Anc == false, "Universal ACK reports ANC off");
             Check(BudsProtocol.AncConfirmation(ackOn, true) == true, "Universal ACK mode one is not an error code");
@@ -66,6 +84,7 @@ internal static class Program
             Check(BluetoothBudsService.DescribeError(new System.Runtime.InteropServices.COMException("busy", unchecked((int)0x80072740))).Contains("jiná aplikace"), "Busy Bluetooth socket has actionable error");
             if (args.Contains("--render")) Render();
             if (args.Contains("--probe")) Probe();
+            if (args.Contains("--diagnose-anc")) DiagnoseAnc();
             Console.WriteLine($"PASS: {count} checks"); return 0;
         }
         catch (Exception ex) { Console.Error.WriteLine(ex); return 1; }
@@ -224,6 +243,46 @@ internal static class Program
             if (state.Updated.HasValue) frame.Continue = false;
         };
         timer.Start(); service.Start(); System.Windows.Threading.Dispatcher.PushFrame(frame); timer.Stop();
+    }
+    private static void DiagnoseAnc()
+    {
+        System.Threading.SynchronizationContext.SetSynchronizationContext(new System.Windows.Threading.DispatcherSynchronizationContext());
+        using var service = new BluetoothBudsService();
+        var frame = new System.Windows.Threading.DispatcherFrame();
+        var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(45) };
+        timer.Tick += (_, _) => frame.Continue = false;
+        bool started = false;
+        bool changedConfirmed = false, restoredConfirmed = false;
+        service.Trace += Console.WriteLine;
+        service.Changed += async state =>
+        {
+            Console.WriteLine($"STATE connected={state.Connected} ANC={state.Anc} {state.Status}");
+            if (started || !state.Connected || !state.Anc.HasValue) return;
+            started = true;
+            bool original = state.Anc.Value;
+            await Task.Delay(1000);
+            try
+            {
+                Console.WriteLine($"TEST ANC={!original}");
+                await service.SetAncAsync(!original);
+                changedConfirmed = true;
+                Console.WriteLine("CONFIRMED change");
+            }
+            catch (Exception ex) { Console.WriteLine("CHANGE FAILED: " + ex.Message); }
+            await Task.Delay(1500);
+            try
+            {
+                Console.WriteLine($"RESTORE ANC={original}");
+                await service.SetAncAsync(original);
+                restoredConfirmed = true;
+                Console.WriteLine("CONFIRMED restore");
+            }
+            catch (Exception ex) { Console.WriteLine("RESTORE UNCONFIRMED: " + ex.Message); }
+            await Task.Delay(1000);
+            frame.Continue = false;
+        };
+        timer.Start(); service.Start(); System.Windows.Threading.Dispatcher.PushFrame(frame); timer.Stop();
+        Check(started && changedConfirmed && restoredConfirmed, "Hardware ANC toggle and restore both confirmed");
     }
 }
 

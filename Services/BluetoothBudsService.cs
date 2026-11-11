@@ -25,6 +25,8 @@ public sealed class BluetoothBudsService : IBudsService, IDisposable
     private Task? worker;
     private BudsState state = new();
     public event Action<BudsState>? Changed;
+    // Opt-in diagnostic stream; no packet logging in normal application use.
+    public event Action<string>? Trace;
 
     public void Start() => worker ??= RunAsync(lifetime.Token);
     public void Reconnect()
@@ -97,8 +99,11 @@ public sealed class BluetoothBudsService : IBudsService, IDisposable
                         if (length == 0) throw new IOException("Sluchátka ukončila spojení.");
                         byte[] bytes = new byte[length];
                         reader.ReadBytes(bytes);
+                        Trace?.Invoke($"RX {bytes.Length} bytes");
                         foreach (var packet in protocol.Feed(bytes))
                         {
+                            if (packet.Id is 0x42 or 0x51 or 0x77)
+                                Trace?.Invoke($"Decoded 0x{packet.Id:X2}: {Convert.ToHexString(packet.Payload)}");
                             var next = BudsProtocol.Apply(state, packet, DateTimeOffset.Now);
                             if (next != state) Publish(next with { Status = "Připojeno · Bluetooth" });
                             if (!initialized && next.Updated.HasValue)
@@ -169,7 +174,9 @@ public sealed class BluetoothBudsService : IBudsService, IDisposable
             using var writer = new DataWriter(current.OutputStream);
             try
             {
-                writer.WriteBytes(BudsProtocol.Encode(id, payload, response));
+                var frame = BudsProtocol.Encode(id, payload, response);
+                Trace?.Invoke("TX " + Convert.ToHexString(frame));
+                writer.WriteBytes(frame);
                 await writer.StoreAsync().AsTask(timeout.Token);
                 await writer.FlushAsync().AsTask(timeout.Token);
             }

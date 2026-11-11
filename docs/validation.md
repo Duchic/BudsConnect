@@ -1,5 +1,12 @@
 # Ověření první verze (2026-11-11)
 
+## Oprava příjmu potvrzení ANC 0.1.3 — ověřeno na fyzických Buds3
+
+- Předchozí oprava 0.1.2 nestačila: univerzální ACK sice uměla interpretovat, ale parser ho předtím zahodil kvůli vysokým bitům hlavičky. Skutečné zachycené odpovědi mají hlavičky 0x9005 a 0xD005.
+- Živý test před opravou reprodukoval změnu ANC bez rozpoznání potvrzení. Po opravě tentýž test úspěšně změnil původně vypnuté ANC na zapnuté a poté obnovil vypnutý stav. Oba příkazy byly potvrzené skutečnými zprávami 0x42/7801 a 0x42/7800, bez timeoutu. Běžná aplikace byla během testu pozastavena a poté znovu spuštěna.
+- 169 automatických kontrol prošlo, včetně obou skutečných rámců rozdělených na každé hranici a všech čtyř kombinací vysokých bitů hlavičky. Zachované kontroly CRC, délky a ukončovacího bajtu.
+- Diagnostika je dostupná pouze výslovným spuštěním testovacího programu s `--diagnose-anc`; přepíná ANC a obnovuje původní stav. Běžná aplikace Bluetooth zprávy neukládá. Diagnostika musí mít ovládací spojení volné.
+
 ## Oprava indikace ANC 0.1.2
 
 - Lokální protokol ukazoval opakované vypršení čekání na potvrzení změny ANC. Doplněno univerzální potvrzení 0x42 pro příkaz 0x78: druhý bajt je aplikovaný režim, nikoli návratový kód.
