@@ -25,6 +25,9 @@ Read messages:
 | 0x61 | Battery L=2, R=3, case=7; noise mode=12 |
 | 0x77 | Noise mode=0 |
 | 0x51 | Command ID=0, result=1 (zero means success) |
+| 0x42 | Universal acknowledgement: command ID=0, applied value=1; for command 0x78, value 0=off, 1=ANC |
+
+Universal ANC acknowledgement is a state report: `[0x78, 0x01]` confirms ANC **on**, not a failure result. Both the stored state and a pending command are updated from it. Other command acknowledgements, truncated payloads and unknown modes cannot confirm ANC. Reference: https://github.com/timschneeb/GalaxyBudsClient/blob/master/GalaxyBudsClient/Message/Decoder/AcknowledgementDecoder.cs
 
 Write messages: initial status response, 0x88 manager info `[1,2,34]`, 0x78 noise mode `[0]` (off) or `[1]` (ANC). The UI does not assume success until the device reports matching state or a successful command response. A five-second timeout leaves the prior state unchanged.
 

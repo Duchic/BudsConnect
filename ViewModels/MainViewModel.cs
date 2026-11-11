@@ -11,7 +11,7 @@ namespace BudsConnect.ViewModels;
 
 public sealed class MainViewModel : INotifyPropertyChanged
 {
-    private readonly BluetoothBudsService service;
+    private readonly IBudsService service;
     private readonly AudioService audio = new();
     private readonly DispatcherTimer refresh;
     private bool busy;
@@ -32,7 +32,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public bool AncOn => State.Anc == true;
     public bool AncOff => State.Anc == false;
     public bool CanControlAnc => State.Connected && State.Anc.HasValue && !busy;
-    public string AncHint => busy ? "Čekám na potvrzení sluchátek…" : State.Anc.HasValue ? "" : "Ovládání bude dostupné po načtení stavu sluchátek.";
+    public string AncHint => busy ? "Čekám na potvrzení sluchátek…" : State.Anc switch
+    {
+        true => "ANC je zapnuté.",
+        false => "ANC je vypnuté.",
+        _ => "Ovládání bude dostupné po načtení stavu sluchátek."
+    };
     public string Updated => State.Updated is { } at ? $"Poslední údaj {at.LocalDateTime:HH:mm:ss}" : "Čekám na údaje baterie";
     public string Error => error;
     public Visibility ErrorVisibility => error.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -51,7 +56,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    public MainViewModel(BluetoothBudsService service, Preferences preferences)
+    public MainViewModel(IBudsService service, Preferences preferences)
     {
         this.service = service;
         Preferences = preferences;

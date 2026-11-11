@@ -71,7 +71,21 @@ public sealed class BudsProtocol
                 Anc = p.Length > 12 ? AncMode(p[12]) : null, Updated = now };
         if (packet.Id == 0x77 && p.Length >= 1)
             return previous with { Anc = AncMode(p[0]) };
+        // Buds3 universal ACK echoes the applied mode, NOT a zero-success result code.
+        if (packet.Id == 0x42 && p.Length >= 2 && p[0] == 0x78)
+            return previous with { Anc = AncMode(p[1]) };
         return previous;
+    }
+    public static bool? AncConfirmation(BudsPacket packet, bool desired)
+    {
+        var p = packet.Payload;
+        if (packet.Id == 0x51 && p.Length >= 2 && p[0] == 0x78) return p[1] == 0;
+        if (packet.Id == 0x42 && p.Length >= 2 && p[0] == 0x78)
+            return AncMode(p[1]) is { } applied ? applied == desired : null;
+        // Notifications may also confirm a command; unrelated/truncated packets may not.
+        bool? mode = packet.Id == 0x77 && p.Length >= 1 ? AncMode(p[0])
+            : packet.Id == 0x61 && p.Length > 12 ? AncMode(p[12]) : null;
+        return mode == desired ? true : null;
     }
     private static int? Battery(byte value) => value <= 100 ? value : null;
     private static bool? AncMode(byte value) => value switch { 0 => false, 1 => true, _ => null };

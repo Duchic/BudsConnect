@@ -1,5 +1,12 @@
 # Ověření první verze (2026-11-11)
 
+## Oprava indikace ANC 0.1.2
+
+- Lokální protokol ukazoval opakované vypršení čekání na potvrzení změny ANC. Doplněno univerzální potvrzení 0x42 pro příkaz 0x78: druhý bajt je aplikovaný režim, nikoli návratový kód.
+- Aktivní volba je zvýrazněná modrým rámečkem a podkladem; zobrazuje se také „ANC je zapnuté/vypnuté“. Stav se synchronizuje mezi hlavním oknem a rychlým panelem a reaguje na oznámení změny ze sluchátek.
+- 145 kontrol prošlo. Testy používají skutečná okna a jejich click handlery s náhradní službou: opakované zapnutí/vypnutí, potvrzení 0x42, vnější změnu, odmítnutí příkazu a odpojení, v obou motivech. Při neúspěchu se zachová poslední potvrzený stav.
+- Ověřeny neplatné a nesouvisející potvrzovací zprávy a zachování původní podpory odpovědi 0x51. Komunikace se skutečnými sluchátky nebyla těmito syntetickými testy simulována jako hardwarové ověření.
+
 ## Oprava motivů 0.1.1
 
 - Regresní kontrola před opravou selhala: skutečné pozadí MainWindow nepoužívalo aplikační paletu. Implicitní styl Window se neuplatňoval na odvozená okna, zatímco text přebíral tmavé barvy.

@@ -12,7 +12,7 @@ using Windows.Storage.Streams;
 
 namespace BudsConnect.Services;
 
-public sealed class BluetoothBudsService : IDisposable
+public sealed class BluetoothBudsService : IBudsService, IDisposable
 {
     private static readonly Guid ServiceId = new("2e73a4ad-332d-41fc-90e2-16bef06523f2");
     private readonly CancellationTokenSource lifetime = new();
@@ -110,14 +110,11 @@ public sealed class BluetoothBudsService : IDisposable
                             }
                             if (ancReply != null)
                             {
-                                if (packet.Id == 0x51 && packet.Payload.Length >= 2 && packet.Payload[0] == 0x78)
+                                if (BudsProtocol.AncConfirmation(packet, desiredAnc) is { } success)
                                 {
-                                    bool success = packet.Payload[1] == 0;
-                                    if (success) Publish(state with { Anc = desiredAnc });
+                                    if (success && packet.Id == 0x51) Publish(state with { Anc = desiredAnc });
                                     ancReply.TrySetResult(success);
                                 }
-                                else if ((packet.Id == 0x77 || packet.Id == 0x61) && state.Anc == desiredAnc)
-                                    ancReply.TrySetResult(true);
                             }
                         }
                     }

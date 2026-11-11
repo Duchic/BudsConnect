@@ -47,6 +47,17 @@ internal static class Program
             Check(BudsProtocol.Apply(state, new(0x60, new byte[2], false), now) == state, "Truncated status cannot overwrite state");
             Check(BudsProtocol.Apply(state, new(0x77, new byte[] { 0 }, false), now).Anc == false, "External ANC change");
             Check(BudsProtocol.Apply(state, new(0x77, new byte[] { 3 }, false), now).Anc == null, "Unknown mode not misrepresented as ANC off");
+            var ackOn = new BudsPacket(0x42, new byte[] { 0x78, 1 }, true);
+            var ackOff = new BudsPacket(0x42, new byte[] { 0x78, 0 }, true);
+            Check(BudsProtocol.Apply(state, ackOn, now).Anc == true, "Universal ACK reports ANC on");
+            Check(BudsProtocol.Apply(state, ackOff, now).Anc == false, "Universal ACK reports ANC off");
+            Check(BudsProtocol.AncConfirmation(ackOn, true) == true, "Universal ACK mode one is not an error code");
+            Check(BudsProtocol.AncConfirmation(ackOff, false) == true, "Universal ACK confirms off command");
+            Check(BudsProtocol.AncConfirmation(ackOff, true) == false, "Mismatched applied mode is not success");
+            foreach (var ignored in new[] { new BudsPacket(0x42, new byte[] { 0x78 }, true), new BudsPacket(0x42, new byte[] { 0x86, 1 }, true), new BudsPacket(0x42, new byte[] { 0x78, 255 }, true), new BudsPacket(0x61, new byte[8], true) })
+                Check(BudsProtocol.AncConfirmation(ignored, true) == null, "Unrelated, malformed or unknown ACK does not confirm ANC");
+            Check(BudsProtocol.AncConfirmation(new(0x51, new byte[] { 0x78, 0 }, true), true) == true, "Legacy success response remains supported");
+            Check(BudsProtocol.AncConfirmation(new(0x51, new byte[] { 0x78, 1 }, true), true) == false, "Legacy error response remains an error");
             state = BudsProtocol.Apply(state, new(0x60, new byte[] { 1, 255, 0, 1, 0, 0, 255 }, false), now);
             Check(state.Left == null && state.Right == 0 && state.Case == null && state.TrayBattery == 0, "Unavailable values distinct from real zero battery");
             Check((state with { Connected = false }).TrayBattery == null, "No stale tray percentage after disconnect");
@@ -63,7 +74,8 @@ internal static class Program
     { if (!condition) throw new Exception("FAIL: " + description); count++; }
     private static void Render()
     {
-        var app = new App(); app.InitializeComponent();
+        var app = new TestApp();
+        app.Resources = new ResourceDictionary { Source = new Uri("pack://application:,,,/BudsConnect;component/ThemeResources.xaml") };
         using var service = new BluetoothBudsService();
         var vm = new MainViewModel(service, new Preferences());
         var window = new MainWindow(vm);
@@ -93,6 +105,93 @@ internal static class Program
                 "Native appearance picker has matching text and surface colors");
         }
         vm.Stop();
+        TestAncUi(app);
+    }
+    private static void TestAncUi(App app)
+    {
+        Console.WriteLine("Testing ANC UI...");
+        System.Threading.SynchronizationContext.SetSynchronizationContext(new System.Windows.Threading.DispatcherSynchronizationContext(app.Dispatcher));
+        var device = new FakeBudsService();
+        var vm = new MainViewModel(device, new Preferences());
+        var main = new MainWindow(vm);
+        var tray = new TrayWindow(vm);
+        foreach (var window in new Window[] { main, tray })
+        { var root = (FrameworkElement)window.Content; root.Measure(new Size(424, 650)); root.Arrange(new Rect(0, 0, 424, 650)); root.UpdateLayout(); }
+        var mainButtons = Descendants<System.Windows.Controls.RadioButton>((DependencyObject)main.Content).ToArray();
+        var trayButtons = Descendants<System.Windows.Controls.RadioButton>((DependencyObject)tray.Content).ToArray();
+        Check(mainButtons.Length == 2 && trayButtons.Length == 2, "Both ANC selectors exist");
+        foreach (bool dark in new[] { false, true })
+        {
+            Console.WriteLine($"ANC UI theme: dark={dark}");
+            ThemePalette.Apply(app.Resources, dark);
+            device.Emit(new(true, Anc: false)); Drain();
+            Check(mainButtons[0].IsChecked == true && trayButtons[0].IsChecked == true, "Initial off state shared by both views");
+            for (int cycle = 0; cycle < 3; cycle++)
+            {
+                Click(mainButtons[1]); Drain();
+                Check(device.Pending != null && !vm.CanControlAnc, "Click sends command and disables further changes");
+                device.Acknowledge(true); Drain();
+                Check(vm.CanControlAnc && mainButtons[1].IsChecked == true && mainButtons[0].IsChecked == false && trayButtons[1].IsChecked == true && trayButtons[0].IsChecked == false,
+                    "Universal ACK selects on in both windows after a real click");
+                Check(vm.AncHint == "ANC je zapnuté.", "Current on status is explicit");
+                CheckSelected(mainButtons[1], app); CheckSelected(trayButtons[1], app);
+                Click(trayButtons[0]); Drain(); device.Acknowledge(false); Drain();
+                Check(mainButtons[0].IsChecked == true && mainButtons[1].IsChecked == false && trayButtons[0].IsChecked == true && trayButtons[1].IsChecked == false,
+                    "Universal ACK selects off in both windows after repeated clicks");
+                Check(vm.AncHint == "ANC je vypnuté.", "Current off status is explicit");
+            }
+            device.Emit(device.State with { Anc = true }); Drain();
+            Check(mainButtons[1].IsChecked == true && trayButtons[1].IsChecked == true, "External ANC change updates both selectors");
+            RenderWindow(main, 424, 611, $"ANC-on-{(dark ? "dark" : "light")}");
+            Click(mainButtons[0]); Drain(); device.Fail(); Drain();
+            Check(vm.CanControlAnc && mainButtons[1].IsChecked == true && trayButtons[1].IsChecked == true && vm.Error.Length > 0,
+                "Command failure preserves confirmed selection");
+            device.Emit(new()); Drain();
+            Check(!vm.CanControlAnc && mainButtons.All(b => b.IsChecked == false) && trayButtons.All(b => b.IsChecked == false), "Disconnect clears both selections");
+        }
+        vm.Stop();
+    }
+    private static void CheckSelected(System.Windows.Controls.RadioButton button, App app)
+    {
+        button.ApplyTemplate();
+        var border = (System.Windows.Controls.Border)button.Template.FindName("B", button);
+        Check(((SolidColorBrush)border.BorderBrush).Color == ((SolidColorBrush)app.Resources["Accent"]).Color &&
+              ((SolidColorBrush)border.Background).Color == ((SolidColorBrush)app.Resources["Selected"]).Color,
+              "Confirmed ANC button has accent border and selected fill");
+    }
+    // Pump WPF bindings without executing the production startup (mutex, tray, Bluetooth).
+    private sealed class TestApp : App
+    {
+        protected override void OnStartup(StartupEventArgs e) { }
+    }
+    private static IEnumerable<T> Descendants<T>(DependencyObject root) where T : DependencyObject
+    {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        { var child = VisualTreeHelper.GetChild(root, i); if (child is T match) yield return match; foreach (var next in Descendants<T>(child)) yield return next; }
+    }
+    private static void Click(System.Windows.Controls.RadioButton button) => typeof(System.Windows.Controls.Primitives.ButtonBase)
+        .GetMethod("OnClick", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.Invoke(button, null);
+    private static void Drain()
+    {
+        var frame = new System.Windows.Threading.DispatcherFrame();
+        System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvoke(
+            System.Windows.Threading.DispatcherPriority.Background, new Action(() => frame.Continue = false));
+        System.Windows.Threading.Dispatcher.PushFrame(frame);
+    }
+    private sealed class FakeBudsService : IBudsService
+    {
+        public event Action<BudsState>? Changed;
+        public BudsState State { get; private set; } = new();
+        public TaskCompletionSource? Pending { get; private set; }
+        public void Emit(BudsState state) { State = state; Changed?.Invoke(state); }
+        public Task SetAncAsync(bool enabled) { Pending = new(); return Pending.Task; }
+        public void Acknowledge(bool enabled)
+        {
+            Emit(BudsProtocol.Apply(State, new(0x42, new byte[] { 0x78, enabled ? (byte)1 : (byte)0 }, true), DateTimeOffset.Now));
+            var pending = Pending; Pending = null; pending!.SetResult();
+        }
+        public void Fail() { var pending = Pending; Pending = null; pending!.SetException(new IOException("Sluchátka nepotvrdila změnu ANC.")); }
+        public void Reconnect() { }
     }
     private static double Contrast(Color a, Color b)
     {
