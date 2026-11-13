@@ -6,6 +6,23 @@ Check your earbud batteries beside the Windows clock, switch noise cancellation,
 
 Built with **C# · .NET 10 · WPF**. Available in **English and Czech**.
 
+## Screenshots
+
+Actual application views rendered with sample battery and connection data.
+
+<table>
+  <tr><th>Light theme</th><th>Dark theme</th></tr>
+  <tr>
+    <td><img src="docs/screenshots/main-light.png" alt="BudsConnect light theme with individual battery levels, ANC and volume controls" width="320"></td>
+    <td><img src="docs/screenshots/main-dark.png" alt="BudsConnect dark theme with individual battery levels, ANC and volume controls" width="320"></td>
+  </tr>
+  <tr><th>Mini mode</th><th>Settings</th></tr>
+  <tr>
+    <td valign="top"><img src="docs/screenshots/mini-dark.png" alt="Compact Mini mode showing earbud and case batteries, ANC switch and volume slider" width="270"></td>
+    <td><img src="docs/screenshots/settings-light.png" alt="Settings with a local device name, startup options, appearance and language selection" width="320"></td>
+  </tr>
+</table>
+
 ## Features
 
 | Feature | What it does |
