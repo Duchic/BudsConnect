@@ -1,5 +1,12 @@
 # Ověření první verze (2026-11-11)
 
+## Vlastní název zařízení 0.3.1 (2026-11-13)
+
+- V nastavení přidáno pole názvu pouze pro BudsConnect (česky i anglicky). Název se ukládá do existujících lokálních preferencí; prázdné pole obnoví název z Bluetooth.
+- Vlastní název se používá v hlavním okně, titulku včetně Mini režimu, rychlém panelu, popisku ikony u hodin a upozornění na nízkou baterii. Bluetooth stav, identifikace zařízení a ovládání hlasitosti se nemění.
+- Prošlo 467 kontrol včetně serializace názvu, aktualizace již vytvořených oken, zachování názvu při odpojení a opětovném připojení, přepínání jazyků a obnovení původního názvu. Vizuálně zkontrolovány světlý i tmavý motiv nastavení a dlouhý název v rychlém panelu.
+- Release sestavení publikováno do dist/BudsConnect-0.3.1. Testy neprováděly fyzické přejmenování sluchátek ani změnu ANC či hlasitosti.
+
 ## Jazyky 0.3.0 (2026-11-13)
 
 - Přidány English a Čeština, výchozí angličtina i pro starší nastavení bez jazyka. Volba v Settings → Language se uloží do settings.json a aplikuje po Save bez restartu.

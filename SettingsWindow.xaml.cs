@@ -12,6 +12,7 @@ public partial class SettingsWindow : Window
     public SettingsWindow(MainViewModel model)
     {
         this.model = model; InitializeComponent();
+        DeviceAliasBox.Text = model.Preferences.DeviceAlias;
         StartupBox.IsChecked = Preferences.StartsWithWindows();
         TrayBox.IsChecked = model.Preferences.CloseToTray;
         AlertBox.IsChecked = model.Preferences.LowBatteryAlert;
@@ -27,7 +28,9 @@ public partial class SettingsWindow : Window
             model.Preferences.LowBatteryAlert = AlertBox.IsChecked == true;
             model.Preferences.Theme = (string)((ComboBoxItem)ThemeBox.SelectedItem).Tag;
             model.Preferences.Language = (string)((ComboBoxItem)LanguageBox.SelectedItem).Tag;
+            model.Preferences.DeviceAlias = DeviceAliasBox.Text;
             model.Preferences.Save(); Localization.Apply(model.Preferences.Language);
+            model.RefreshPreferences();
             ((App)Application.Current).ApplyTheme(); Close();
         }
         catch (Exception ex) { MessageBox.Show(this, Localization.Get("SaveError", ex.Message), "BudsConnect"); }

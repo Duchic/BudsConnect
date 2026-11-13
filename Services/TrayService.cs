@@ -14,6 +14,7 @@ public sealed class TrayService : IDisposable
     private bool lowAlerted;
     private string lastIconKey = "";
     private BudsState lastState = new();
+    private string lastName = "Galaxy Buds3";
     private bool lastDark;
     private readonly ToolStripItem openItem;
     private readonly ToolStripItem exitItem;
@@ -30,9 +31,10 @@ public sealed class TrayService : IDisposable
         Update(new(), false, false);
         notify.Visible = true;
     }
-    public void Update(BudsState state, bool alerts, bool darkTaskbar)
+    public void Update(BudsState state, bool alerts, bool darkTaskbar, string? displayName = null)
     {
         lastState = state; lastDark = darkTaskbar;
+        lastName = displayName ?? state.Name;
         int? level = state.TrayBattery;
         string label = level?.ToString() ?? "–";
         string key = label + darkTaskbar;
@@ -43,12 +45,12 @@ public sealed class TrayService : IDisposable
             icon?.Dispose(); icon = next; lastIconKey = key;
         }
         string text = state.Connected
-            ? Localization.Get("TrayDetails", BudsState.Percent(state.Left), BudsState.Percent(state.Right), BudsState.Percent(state.Case))
-            : Localization.Get("TrayDisconnected");
+            ? Localization.Get("NamedTrayDetails", lastName, BudsState.Percent(state.Left), BudsState.Percent(state.Right), BudsState.Percent(state.Case))
+            : Localization.Get("NamedTrayDisconnected", lastName);
         notify.Text = text.Length > 127 ? text[..127] : text;
         if (alerts && level is < 20 && !lowAlerted)
         {
-            notify.ShowBalloonTip(6000, Localization.Get("LowTitle"), Localization.Get("LowBody", level!.Value), ToolTipIcon.Info);
+            notify.ShowBalloonTip(6000, Localization.Get("NamedLowTitle", lastName), Localization.Get("LowBody", level!.Value), ToolTipIcon.Info);
             lowAlerted = true;
         }
         // Keep the latch across disconnects to avoid repeated alerts every reconnect.
@@ -71,7 +73,7 @@ public sealed class TrayService : IDisposable
     private void OnLanguageChanged()
     {
         openItem.Text = Localization.Get("Open"); exitItem.Text = Localization.Get("Exit");
-        Update(lastState, false, lastDark);
+        Update(lastState, false, lastDark, lastName);
     }
     public void Dispose() { Localization.Changed -= OnLanguageChanged; notify.Visible = false; notify.ContextMenuStrip?.Dispose(); notify.Dispose(); icon?.Dispose(); }
 }

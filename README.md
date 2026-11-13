@@ -1,55 +1,130 @@
 # BudsConnect
 
-Minimalistická aplikace s anglickým a českým rozhraním pro **Windows 11 / Windows 10 2004+** a **Galaxy Buds3 (SM-R530)**. Nativní C#/.NET 10, WPF.
+**A minimalist Windows companion for Samsung Galaxy Buds3.**
 
-## Spuštění
+Check your earbud batteries beside the Windows clock, switch noise cancellation, and adjust volume from a clean desktop interface. Switch to **Mini mode** when you only need the essentials.
 
-Připravená přenosná verze je ve složce `dist/BudsConnect`. Spusť `BudsConnect.exe`; soubory z této složky ponech pohromadě. Vyžaduje .NET 10 Desktop Runtime (na vývojovém počítači je již nainstalovaný).
+Built with **C# · .NET 10 · WPF**. Available in **English and Czech**.
 
-1. Spáruj Galaxy Buds3 v nastavení Bluetooth Windows a otevři pouzdro.
-2. Ukonči jiné aplikace spravující Galaxy Buds, pokud blokují ovládací Bluetooth spojení.
-3. Spusť aplikaci. Automaticky hledá spárovaná Galaxy Buds3 a opakuje připojení po osmi sekundách.
-4. Pro změnu hlasitosti zvol Galaxy Buds3 jako výchozí zvukový výstup Windows.
-5. Přetáhni ikonu BudsConnect z nabídky skrytých ikon vedle hodin. Windows řídí její viditelnost i pořadí.
+## Features
 
-## Funkce
+| Feature | What it does |
+| --- | --- |
+| Battery overview | Shows separate battery levels for the left earbud, right earbud, and charging case when available. |
+| Battery beside the clock | Displays the lower available earbud battery level as a number in the Windows system tray. Hover for details or click for quick controls. |
+| Noise cancellation | Switches ANC on or off and updates the interface when the earbuds confirm the change. |
+| Volume control | Adjusts the Windows audio output when Galaxy Buds3 are the default playback device. |
+| Mini mode | Shrinks the main window to battery icons, an ANC switch, a volume slider, and an **Expand** button. |
+| Light and dark themes | Choose a theme or follow the Windows appearance setting. |
+| English and Czech | Change the language in Settings without restarting the app. English is the default. |
+| Background operation | Keep the app running in the system tray and optionally start it with Windows. |
+| Low-battery alerts | Receive a notification when an earbud battery drops below 20%. |
 
-- Výchozí jazyk je **English**. V **Settings → Language** vyber **English** nebo **Čeština** a stiskni **Save**. Jazyk se ihned použije v otevřených oknech, Mini režimu, oznámeních i nabídce u hodin a uloží se pro příští spuštění. Starší nastavení bez položky Language přejde na angličtinu; neznámá hodnota také používá angličtinu.
+No account, cloud service, or application telemetry is required. Settings and error logs stay on your PC.
 
-- Tlačítko **Mini** vedle „Bluetooth ve Windows“ přepne stejné okno do kompaktního režimu (286 × 290 bodů): ikony levého/pravého sluchátka a pouzdra s bateriemi, malý přepínač ANC a hlasitost. **Zvětšit** vrátí původní velikost. Režimy sdílejí připojení i aktuální stav; ANC se zobrazí až po potvrzení sluchátek.
+## Compatibility
 
-- Skutečné hodnoty baterie levého a pravého sluchátka a pouzdra, pokud je zařízení poskytne.
-- Číselná ikona u hodin: nižší dostupná baterie sluchátek; při odpojení pomlčka. Detail po najetí, rychlý panel po kliknutí.
-- ANC zapnuto/vypnuto, s potvrzením od sluchátek a chybou při neúspěchu.
-- Hlasitost výchozího zvukového výstupu, pouze pokud jde o Galaxy Buds3.
-- Světlý/tmavý vzhled nebo vzhled podle Windows.
-- Zavření do oznamovací oblasti, volitelné spuštění s Windows, upozornění pod 20 % (znovu až po nabití alespoň na 25 %).
-- Pravé tlačítko na ikoně → Ukončit. Automatické spuštění lze vypnout v Nastavení.
-- Bez účtu, cloudu a telemetrie aplikace.
+- **Earbuds:** Samsung Galaxy Buds3 (**SM-R530**).
+- **Windows:** Windows 11 or Windows 10 version 2004 and later.
+- **Bluetooth:** Earbuds must already be paired with Windows.
+- **Runtime:** .NET 10 Desktop Runtime for the framework-dependent build.
+- **Development:** .NET 10 SDK on Windows.
 
-## Omezení první verze
+Galaxy Buds3 Pro and Galaxy Buds3 FE are not supported by this version. BudsConnect uses a community-documented Bluetooth protocol rather than an official Samsung SDK.
 
-Komunikace používá komunitně popsaný protokol, nikoli oficiální Samsung SDK. Testy parseru a sestavení nenahrazují ověření na fyzických sluchátkách. Buds3 Pro a Buds3 FE jsou záměrně vyloučené. Přejmenované zařízení musí mít v názvu „Buds3“ nebo „Buds 3“. Při více spárovaných párech aplikace vyžádá jednoznačné párování. Hodnota pouzdra může být nedostupná při zavřeném pouzdře; zobrazí se „—“. Ovládání zvuku se při změně výchozího výstupu vypne, místo aby měnilo hlasitost reproduktorů.
+## Build and run
 
-Nastavení a rotovaný lokální protokol chyb: `%LOCALAPPDATA%\BudsConnect`. Spuštění s Windows používá uživatelský klíč `HKCU\Software\Microsoft\Windows\CurrentVersion\Run\BudsConnect`. Aplikace nevyžaduje administrátora. Před přesunutím přenosné složky vypni automatické spuštění a v novém umístění jej znovu zapni.
-
-## Vývoj a ověření
+Clone the repository and run these commands from its root directory on Windows:
 
 ```powershell
+git clone https://github.com/Duchic/BudsConnect.git
+cd BudsConnect
 dotnet restore BudsConnect.csproj
-dotnet build BudsConnect.csproj -c Release --no-restore
-dotnet run --project tests/BudsConnect.Tests.csproj -c Release -- --render
 dotnet publish BudsConnect.csproj -c Release --no-restore --self-contained false -o dist/BudsConnect
 ```
 
-Testovací konzole ověřuje známý CRC vektor, referenční Samsung CRC, fragmentaci dat na každé hranici, sloučené zprávy, poškození a obnovení proudu, délky, hodnoty baterií, nedostupné hodnoty a změny ANC. Volba `--render` ověří pozadí a kontrast všech oken při přepínání motivů a vykreslí je bez zobrazení na ploše do `TestResults/*Window-light.png` a `TestResults/*Window-dark.png`.
+Launch `dist/BudsConnect/BudsConnect.exe`. Keep the files in that output folder together. This build uses the .NET 10 Desktop Runtime installed on the computer.
 
-### Ruční test na Galaxy Buds3
+## First connection
 
-- Zkontrolovat levé/pravé/pouzdro proti Galaxy Wearable a ověřit pohyb hodnot v ikoně.
-- Přepnout ANC oběma směry; ověřit také změnu fyzickým ovládáním sluchátek.
-- Zavřít pouzdro, vypnout Bluetooth, znovu připojit a uspat/probudit počítač.
-- Vyzkoušet jedno sluchátko, nedostupné pouzdro, upozornění nízké baterie.
-- Ověřit rychlý panel, zavření do tray, ukončení a více monitorů s různým DPI.
+1. Pair your Galaxy Buds3 in **Windows Bluetooth settings** and open the charging case.
+2. Close other Galaxy Buds management apps if they are using the Bluetooth control connection.
+3. Launch **BudsConnect**. It automatically looks for your paired earbuds.
+4. To use the volume slider, select **Galaxy Buds3** as the default audio output in Windows.
+5. To keep the battery number visible, drag the BudsConnect icon from the hidden-icons menu to the taskbar beside the clock. Windows controls the icon's visibility and position.
 
-Zdroje protokolu: [docs/protocol.md](docs/protocol.md). NAudio 2.2.1 je distribuováno pod MIT; licenční podmínky závislostí jsou v jejich balíčcích NuGet.
+Use **Reconnect** to try again immediately. Otherwise, the app retries a lost connection every eight seconds.
+
+## Everyday controls
+
+### Main window and Mini mode
+
+Click **Mini** next to **Windows Bluetooth** to switch to the compact interface. It shows the left and right earbuds and the case, their battery levels, ANC, and volume. Click **Expand** to restore the full window.
+
+Both layouts share the same connection and live state. Switching layouts does not reconnect the earbuds or change their settings.
+
+### System tray
+
+- The number shows the **lower available battery level of the two earbuds**. The case battery is not included.
+- Hover over the icon for individual battery levels.
+- Click the icon to open the quick-control panel.
+- Right-click and choose **Exit** to close the application completely.
+- A dash means the earbuds are disconnected or the battery value is unavailable.
+
+Battery and ANC updates arrive from the earbuds; there is no fixed battery polling interval. The volume display refreshes every two seconds. The main window shows when battery data was last received.
+
+### Settings
+
+- **Device name in this app:** set a personal name for BudsConnect, its tray panel, and notifications. Leave the field blank to restore the original earbud name. This does not rename the Bluetooth device or affect existing pairings.
+- **Language:** choose **English** or **Čeština**, then click **Save**. The change applies immediately and is remembered for the next launch.
+- **Appearance:** use light mode, dark mode, or the Windows setting.
+- **Start with Windows:** launch BudsConnect automatically in the background.
+- **Keep running when the window is closed:** close the window without stopping the tray icon and connection.
+- **Low-battery notifications:** notify below 20%; another alert is enabled after the battery reaches at least 25%.
+
+**Česky:** V nabídce **Settings → Language** vyber **Čeština** a klikni na **Save**. Přeloží se hlavní okno, Mini režim, rychlý panel, nabídka u hodin i hlášky aplikace.
+
+## Troubleshooting and current limitations
+
+| Symptom | What to check |
+| --- | --- |
+| Another app is using the connection | Close Galaxy Buds / BudsManager or another earbud manager, then click **Reconnect**. |
+| Earbuds are not found | Check pairing and Bluetooth in Windows. A renamed device must still contain `Buds3` or `Buds 3` in its name. |
+| More than one pair is found | This version requires a single matching paired Galaxy Buds3 device. |
+| The case battery shows a dash | The earbuds may not report the case battery, particularly when the case is closed. |
+| The volume slider is unavailable | Set Galaxy Buds3 as the default playback device. The app does not change the volume of unrelated speakers or headphones. |
+| An ANC change is not confirmed | Check the connection and try again. The app waits up to five seconds and retains the last confirmed state if the command fails. |
+
+ANC switching and confirmation have been tested on physical Galaxy Buds3. Firmware compatibility, charging transitions, sleep/resume, and mixed-DPI monitor behavior still need broader testing. See the [validation notes](docs/validation.md) for the scope of completed checks.
+
+## Local settings and logs
+
+Settings and rotating error logs are stored in:
+
+```text
+%LOCALAPPDATA%\BudsConnect
+```
+
+The optional startup entry is stored under:
+
+```text
+HKCU\Software\Microsoft\Windows\CurrentVersion\Run\BudsConnect
+```
+
+Administrator access is not required. If you move the application folder, disable **Start with Windows** first, then enable it again from the new location.
+
+## Development and validation
+
+```powershell
+dotnet build BudsConnect.csproj -c Release --no-restore
+dotnet run --project tests/BudsConnect.Tests.csproj -c Release -- --render
+```
+
+The test harness covers Bluetooth framing and checksums, captured ANC acknowledgements, battery values, connection state, UI synchronization, Mini mode, themes, and language switching. The `--render` option also creates window previews under `TestResults/` without opening them on the desktop.
+
+Further hardware checks should cover battery readings against Galaxy Wearable, one-earbud use, charging-case transitions, low-battery alerts, Bluetooth reconnection, sleep/resume, and multiple monitors with different DPI settings.
+
+## Acknowledgements
+
+- Bluetooth protocol research: [GalaxyBudsClient](https://github.com/timschneeb/GalaxyBudsClient). Implementation references and captured frame details are recorded in [protocol notes](docs/protocol.md).
+- Audio integration: [NAudio](https://github.com/naudio/NAudio), distributed under the MIT license. Dependency license terms are included in their NuGet packages.

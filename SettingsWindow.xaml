@@ -1,6 +1,9 @@
 <Window Style="{StaticResource AppWindow}" x:Class="BudsConnect.SettingsWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="{DynamicResource Loc_SettingsTitle}" Width="420" SizeToContent="Height" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
  <StackPanel Margin="26">
   <TextBlock Text="{DynamicResource Loc_Settings}" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,18"/>
+  <TextBlock Text="{DynamicResource Loc_DeviceAlias}" Margin="0,0,0,8"/>
+  <TextBox x:Name="DeviceAliasBox" MaxLength="64" Padding="8" Foreground="{DynamicResource Text}" Background="{DynamicResource Soft}" BorderBrush="{DynamicResource Line}" CaretBrush="{DynamicResource Text}" AutomationProperties.Name="{DynamicResource Loc_DeviceAlias}"/>
+  <TextBlock Text="{DynamicResource Loc_DeviceAliasHint}" Foreground="{DynamicResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,12"/>
   <CheckBox x:Name="StartupBox" Content="{DynamicResource Loc_Startup}"/>
   <CheckBox x:Name="TrayBox" Content="{DynamicResource Loc_CloseToTray}"/>
   <CheckBox x:Name="AlertBox" Content="{DynamicResource Loc_LowAlert}"/>

@@ -10,6 +10,8 @@ public sealed class Preferences
     public bool CloseToTray { get; set; } = true;
     public bool LowBatteryAlert { get; set; } = true;
     public string Theme { get; set; } = "System";
+    private string deviceAlias = "";
+    public string DeviceAlias { get => deviceAlias; set => deviceAlias = value?.Trim() ?? ""; }
     private string language = "en";
     public string Language { get => language; set => language = Localization.Normalize(value); }
     public static string DataDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BudsConnect");

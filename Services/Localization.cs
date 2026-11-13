@@ -12,6 +12,12 @@ public static class Localization
     {
         new("Settings", "Nastavení", "Settings"),
         new("SettingsTitle", "Nastavení · BudsConnect", "Settings · BudsConnect"),
+        new("DeviceAlias", "Název zařízení v aplikaci", "Device name in this app"),
+        new("DeviceAliasHint", "Platí jen pro BudsConnect. Prázdné pole obnoví původní název sluchátek.", "Only used in BudsConnect. Leave blank to use the original earbud name."),
+        new("NamedTrayTitle", "{0} · rychlé ovládání", "{0} · quick controls"),
+        new("NamedLowTitle", "{0} · nízká baterie", "{0} · low battery"),
+        new("NamedTrayDisconnected", "{0} · nepřipojeno", "{0} · disconnected"),
+        new("NamedTrayDetails", "{0} · L {1} · P {2} · Pouzdro {3}", "{0} · L {1} · R {2} · Case {3}"),
         new("Left", "Levé", "Left"), new("Right", "Pravé", "Right"), new("Case", "Pouzdro", "Case"),
         new("LeftShort", "L", "L"), new("RightShort", "P", "R"),
         new("LeftBud", "Levé sluchátko", "Left earbud"), new("RightBud", "Pravé sluchátko", "Right earbud"),

@@ -22,7 +22,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public Preferences Preferences { get; }
     public event PropertyChangedEventHandler? PropertyChanged;
     public event Action<BudsState>? StateChanged;
-    public string Name => State.Name;
+    public string Name => Preferences.DeviceAlias.Length > 0 ? Preferences.DeviceAlias : State.Name;
+    public string WindowTitle => Preferences.DeviceAlias.Length > 0 ? $"{Name} · BudsConnect" : "BudsConnect";
+    public string TrayTitle => Localization.Get("NamedTrayTitle", Name);
+    public void RefreshPreferences() { Notify(nameof(Name)); Notify(nameof(WindowTitle)); Notify(nameof(TrayTitle)); }
     public string Status => Localization.Translate(State.Status);
     public string Left => BudsState.Percent(State.Left);
     public string Right => BudsState.Percent(State.Right);

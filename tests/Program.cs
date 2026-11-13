@@ -129,6 +129,45 @@ internal static class Program
         TestAncUi(app);
         TestMiniUi(app);
         TestLanguages(app);
+        TestDeviceAlias(app);
+    }
+    private static void TestDeviceAlias(App app)
+    {
+        var device = new FakeBudsService();
+        var preferences = System.Text.Json.JsonSerializer.Deserialize<Preferences>("{\"Theme\":\"Dark\"}")!;
+        var vm = new MainViewModel(device, preferences);
+        var main = new MainWindow(vm);
+        var tray = new TrayWindow(vm);
+        device.Emit(new(true, Name: "Galaxy Buds3 (1234)")); Drain();
+        Check(vm.Name == "Galaxy Buds3 (1234)", "Existing settings retain the real device name");
+        preferences.DeviceAlias = "  Tomášova sluchátka  "; vm.RefreshPreferences(); Drain();
+        foreach (var view in new Window[] { main, tray })
+            Check(((System.Windows.Controls.TextBlock)view.FindName("DeviceNameText")).Text == "Tomášova sluchátka", "Alias immediately updates existing windows");
+        Check(vm.State.Name == "Galaxy Buds3 (1234)" && device.State.Name == vm.State.Name, "Display alias does not mutate Bluetooth identity");
+        var restored = System.Text.Json.JsonSerializer.Deserialize<Preferences>(System.Text.Json.JsonSerializer.Serialize(preferences))!;
+        Check(restored.DeviceAlias == "Tomášova sluchátka", "Trimmed alias survives settings serialization");
+        device.Emit(new(false)); Drain();
+        device.Emit(new(true, Name: "Galaxy Buds3 (5678)")); Drain();
+        Check(vm.Name == "Tomášova sluchátka", "Bluetooth updates do not overwrite the alias");
+        foreach (string language in new[] { "cs", "en" })
+        {
+            Localization.Apply(language); Drain();
+            Check(tray.Title == Localization.Get("NamedTrayTitle", vm.Name), "Tray title keeps alias across language changes");
+            foreach (bool dark in new[] { false, true })
+            {
+                ThemePalette.Apply(app.Resources, dark);
+                var settings = new SettingsWindow(vm);
+                var input = (System.Windows.Controls.TextBox)settings.FindName("DeviceAliasBox");
+                Check(input.Text == vm.Name && Contrast(((SolidColorBrush)input.Foreground).Color, ((SolidColorBrush)input.Background).Color) >= 4.5, "Alias field loads saved name and remains readable");
+                RenderWindow(settings, 404, 700, $"Alias-settings-{language}-{dark}");
+            }
+        }
+        preferences.DeviceAlias = new string('W', 64); vm.RefreshPreferences(); Drain();
+        RenderWindow(main, 424, 611, "Alias-long-main");
+        RenderWindow(tray, 308, 380, "Alias-long-tray");
+        preferences.DeviceAlias = "   "; vm.RefreshPreferences(); Drain();
+        Check(vm.Name == "Galaxy Buds3 (5678)" && main.Title == "BudsConnect", "Clearing the alias restores the latest device name and default title");
+        vm.Stop();
     }
     private static void TestLanguages(App app)
     {
