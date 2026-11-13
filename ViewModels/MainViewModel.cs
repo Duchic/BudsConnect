@@ -1,3 +1,4 @@
+using Localization = BudsConnect.Services.Localization;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -22,7 +23,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
     public event Action<BudsState>? StateChanged;
     public string Name => State.Name;
-    public string Status => State.Status;
+    public string Status => Localization.Translate(State.Status);
     public string Left => BudsState.Percent(State.Left);
     public string Right => BudsState.Percent(State.Right);
     public string Case => BudsState.Percent(State.Case);
@@ -32,18 +33,18 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public bool AncOn => State.Anc == true;
     public bool AncOff => State.Anc == false;
     public bool CanControlAnc => State.Connected && State.Anc.HasValue && !busy;
-    public string AncHint => busy ? "Čekám na potvrzení sluchátek…" : State.Anc switch
+    public string AncHint => Localization.Translate(busy ? "Čekám na potvrzení sluchátek…" : State.Anc switch
     {
         true => "ANC je zapnuté.",
         false => "ANC je vypnuté.",
         _ => "Ovládání bude dostupné po načtení stavu sluchátek."
-    };
-    public string Updated => State.Updated is { } at ? $"Poslední údaj {at.LocalDateTime:HH:mm:ss}" : "Čekám na údaje baterie";
-    public string Error => error;
+    });
+    public string Updated => State.Updated is { } at ? Localization.Get("Updated", at.LocalDateTime.ToString("HH:mm:ss")) : Localization.Get("BatteryWaiting");
+    public string Error => Localization.Translate(error);
     public Visibility ErrorVisibility => error.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
     public bool CanControlVolume => volume.HasValue;
     public string VolumeText => volume.HasValue ? $"{volume} %" : "—";
-    public string VolumeHint => volume.HasValue ? "" : "Ve Windows vyber Galaxy Buds3 jako zvukový výstup.";
+    public string VolumeHint => volume.HasValue ? "" : Localization.Get("VolumeHint");
     public double Volume
     {
         get => volume ?? 0;
@@ -60,6 +61,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         this.service = service;
         Preferences = preferences;
+        Localization.Changed += OnLanguageChanged;
         service.Changed += state => Application.Current.Dispatcher.BeginInvoke(() =>
         {
             State = state;
@@ -86,6 +88,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
     }
     public void Reconnect() { error = ""; Notify(""); service.Reconnect(); }
     public void ShowError(string message) { error = message; Notify(nameof(Error)); Notify(nameof(ErrorVisibility)); }
-    public void Stop() => refresh.Stop();
+    private void OnLanguageChanged() => Notify("");
+    public void Stop() { refresh.Stop(); Localization.Changed -= OnLanguageChanged; }
     private void Notify([CallerMemberName] string? name = null) => PropertyChanged?.Invoke(this, new(name));
 }
+

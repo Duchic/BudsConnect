@@ -1,3 +1,4 @@
+using Localization = BudsConnect.Services.Localization;
 using System.IO;
 using System.Text;
 using System.Windows;
@@ -95,6 +96,7 @@ internal static class Program
     {
         var app = new TestApp();
         app.Resources = new ResourceDictionary { Source = new Uri("pack://application:,,,/BudsConnect;component/ThemeResources.xaml") };
+        Localization.Apply("cs");
         using var service = new BluetoothBudsService();
         var vm = new MainViewModel(service, new Preferences());
         var window = new MainWindow(vm);
@@ -112,7 +114,7 @@ internal static class Program
                 Check(Contrast(((SolidColorBrush)view.Foreground).Color, expected) >= 4.5,
                     $"{view.GetType().Name} text contrasts against its actual background");
                 RenderWindow(view, view == window ? 424 : view == settings ? 404 : 308,
-                    view == window ? 611 : view == settings ? 495 : 320,
+                    view == window ? 611 : view == settings ? 585 : 320,
                     $"{view.GetType().Name}-{(dark ? "dark" : "light")}");
             }
             foreach (string text in new[] { "Text", "Muted", "Accent" })
@@ -126,6 +128,46 @@ internal static class Program
         vm.Stop();
         TestAncUi(app);
         TestMiniUi(app);
+        TestLanguages(app);
+    }
+    private static void TestLanguages(App app)
+    {
+        Check(new Preferences().Language == "en", "New settings default to English");
+        Check(System.Text.Json.JsonSerializer.Deserialize<Preferences>("{\"Theme\":\"Dark\"}")!.Language == "en", "Existing settings without language default to English");
+        Check(System.Text.Json.JsonSerializer.Deserialize<Preferences>("{\"Language\":null}")!.Language == "en", "Null language falls back to English");
+        Check(new Preferences { Language = "unknown" }.Language == "en", "Unsupported language falls back to English");
+        Check(Localization.Entries.Select(e => e.Key).Distinct().Count() == Localization.Entries.Count, "Translation keys are unique");
+        var device = new FakeBudsService();
+        var preferences = new Preferences();
+        var vm = new MainViewModel(device, preferences);
+        var main = new MainWindow(vm);
+        var tray = new TrayWindow(vm);
+        var settings = new SettingsWindow(vm);
+        Check(((System.Windows.Controls.ComboBox)settings.FindName("LanguageBox")).SelectedIndex == 0, "English is initially selected in Settings");
+        device.Emit(new(true, Anc: true, Status: "Připojeno · Bluetooth")); Drain();
+        vm.ShowError("Sluchátka nepotvrdila změnu ANC. Zkus to znovu.");
+        foreach (string language in new[] { "en", "cs", "en" })
+        {
+            preferences.Language = language;
+            var saved = System.Text.Json.JsonSerializer.Serialize(preferences);
+            Check(System.Text.Json.JsonSerializer.Deserialize<Preferences>(saved)!.Language == language, "Language survives settings serialization");
+            Localization.Apply(language); Drain();
+            foreach (var entry in Localization.Entries)
+                Check((string)app.Resources["Loc_" + entry.Key] == (language == "en" ? entry.En : entry.Cs), "Translation resource: " + entry.Key);
+            Check(vm.Status == (language == "en" ? "Connected · Bluetooth" : "Připojeno · Bluetooth"), "Existing connection status changes language");
+            Check(vm.Error == Localization.Get("AncTimeout") && vm.AncHint == Localization.Get("AncOnStatus"), "Existing error and ANC status change language");
+            Check(settings.Title == Localization.Get("SettingsTitle"), "Existing settings window title changes language");
+            Check((string)((System.Windows.Controls.Button)main.FindName("ExpandButton")).Content == Localization.Get("Expand"), "Existing mini restore button changes language");
+            foreach (bool dark in new[] { false, true })
+            {
+                ThemePalette.Apply(app.Resources, dark);
+                main.SetMiniMode(false); RenderWindow(main, 424, 611, $"Main-{language}-{dark}");
+                RenderWindow(settings, 404, 585, $"Settings-{language}-{dark}");
+                RenderWindow(tray, 308, 380, $"Tray-{language}-{dark}");
+                main.SetMiniMode(true); RenderWindow(main, 270, 251, $"Mini-{language}-{dark}");
+            }
+        }
+        vm.Stop();
     }
     private static void TestAncUi(App app)
     {
@@ -321,4 +363,5 @@ internal static class Program
         Check(started && changedConfirmed && restoredConfirmed, "Hardware ANC toggle and restore both confirmed");
     }
 }
+
 

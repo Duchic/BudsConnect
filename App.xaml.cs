@@ -1,3 +1,4 @@
+using Localization = BudsConnect.Services.Localization;
 using System;
 using System.Linq;
 using System.Threading;
@@ -22,9 +23,10 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        preferences = Preferences.Load(); Localization.Apply(preferences.Language);
         mutex = new Mutex(true, @"Local\BudsConnect", out bool first);
-        if (!first) { MessageBox.Show("BudsConnect už běží. Otevři jej kliknutím na ikonu u hodin.", "BudsConnect"); Shutdown(); return; }
-        preferences = Preferences.Load(); ApplyTheme();
+        if (!first) { MessageBox.Show(Localization.Get("AlreadyRunning"), "BudsConnect"); Shutdown(); return; }
+        ApplyTheme();
         bluetooth = new BluetoothBudsService();
         model = new MainViewModel(bluetooth, preferences);
         main = new MainWindow(model); MainWindow = main;
@@ -50,7 +52,7 @@ public partial class App : Application
     private void OnUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
         AppLog.Write(e.Exception);
-        MessageBox.Show("V aplikaci nastala chyba. Podrobnosti jsou v %LOCALAPPDATA%\\BudsConnect\\app.log.", "BudsConnect");
+        MessageBox.Show(Localization.Get("AppError"), "BudsConnect");
         e.Handled = true; ExitApplication();
     }
     public void ExitApplication() { Exiting = true; Shutdown(); }
@@ -62,3 +64,4 @@ public partial class App : Application
         base.OnExit(e);
     }
 }
+

@@ -13,13 +13,18 @@ public sealed class TrayService : IDisposable
     private Icon? icon;
     private bool lowAlerted;
     private string lastIconKey = "";
+    private BudsState lastState = new();
+    private bool lastDark;
+    private readonly ToolStripItem openItem;
+    private readonly ToolStripItem exitItem;
     public TrayService(Action showPanel, Action showMain, Action exit)
     {
         var menu = new ContextMenuStrip();
-        menu.Items.Add("Otevřít BudsConnect", null, (_, _) => showMain());
+        openItem = menu.Items.Add(Localization.Get("Open"), null, (_, _) => showMain());
         menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add("Ukončit", null, (_, _) => exit());
-        notify = new NotifyIcon { Text = "BudsConnect · nepřipojeno", ContextMenuStrip = menu };
+        exitItem = menu.Items.Add(Localization.Get("Exit"), null, (_, _) => exit());
+        notify = new NotifyIcon { Text = Localization.Get("TrayDisconnected"), ContextMenuStrip = menu };
+        Localization.Changed += OnLanguageChanged;
         notify.MouseClick += (_, e) => { if (e.Button == MouseButtons.Left) showPanel(); };
         notify.DoubleClick += (_, _) => showMain();
         Update(new(), false, false);
@@ -27,6 +32,7 @@ public sealed class TrayService : IDisposable
     }
     public void Update(BudsState state, bool alerts, bool darkTaskbar)
     {
+        lastState = state; lastDark = darkTaskbar;
         int? level = state.TrayBattery;
         string label = level?.ToString() ?? "–";
         string key = label + darkTaskbar;
@@ -37,12 +43,12 @@ public sealed class TrayService : IDisposable
             icon?.Dispose(); icon = next; lastIconKey = key;
         }
         string text = state.Connected
-            ? $"BudsConnect · L {BudsState.Percent(state.Left)} · P {BudsState.Percent(state.Right)} · Pouzdro {BudsState.Percent(state.Case)}"
-            : "BudsConnect · nepřipojeno";
+            ? Localization.Get("TrayDetails", BudsState.Percent(state.Left), BudsState.Percent(state.Right), BudsState.Percent(state.Case))
+            : Localization.Get("TrayDisconnected");
         notify.Text = text.Length > 127 ? text[..127] : text;
         if (alerts && level is < 20 && !lowAlerted)
         {
-            notify.ShowBalloonTip(6000, "Galaxy Buds3 · nízká baterie", $"Sluchátkům zbývá {level} % baterie.", ToolTipIcon.Info);
+            notify.ShowBalloonTip(6000, Localization.Get("LowTitle"), Localization.Get("LowBody", level!.Value), ToolTipIcon.Info);
             lowAlerted = true;
         }
         // Keep the latch across disconnects to avoid repeated alerts every reconnect.
@@ -62,5 +68,10 @@ public sealed class TrayService : IDisposable
         finally { DestroyIcon(handle); }
     }
     [DllImport("user32.dll")] private static extern bool DestroyIcon(IntPtr handle);
-    public void Dispose() { notify.Visible = false; notify.ContextMenuStrip?.Dispose(); notify.Dispose(); icon?.Dispose(); }
+    private void OnLanguageChanged()
+    {
+        openItem.Text = Localization.Get("Open"); exitItem.Text = Localization.Get("Exit");
+        Update(lastState, false, lastDark);
+    }
+    public void Dispose() { Localization.Changed -= OnLanguageChanged; notify.Visible = false; notify.ContextMenuStrip?.Dispose(); notify.Dispose(); icon?.Dispose(); }
 }

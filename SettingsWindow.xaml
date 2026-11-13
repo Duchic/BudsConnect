@@ -1,14 +1,17 @@
-<Window Style="{StaticResource AppWindow}" x:Class="BudsConnect.SettingsWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Nastavení · BudsConnect" Width="420" SizeToContent="Height" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+<Window Style="{StaticResource AppWindow}" x:Class="BudsConnect.SettingsWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="{DynamicResource Loc_SettingsTitle}" Width="420" SizeToContent="Height" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
  <StackPanel Margin="26">
-  <TextBlock Text="Nastavení" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,18"/>
-  <CheckBox x:Name="StartupBox" Content="Spouštět s Windows"/>
-  <CheckBox x:Name="TrayBox" Content="Po zavření běžet na pozadí"/>
-  <CheckBox x:Name="AlertBox" Content="Upozornit při baterii pod 20 %"/>
-  <TextBlock Text="Vzhled" Margin="0,18,0,8"/>
-  <ComboBox x:Name="ThemeBox" Padding="8" AutomationProperties.Name="Vzhled aplikace"><ComboBoxItem Content="Podle Windows" Tag="System"/><ComboBoxItem Content="Světlý" Tag="Light"/><ComboBoxItem Content="Tmavý" Tag="Dark"/></ComboBox>
-  <TextBlock Text="Číslo u hodin ukazuje nižší dostupnou baterii sluchátek. Baterie pouzdra se do něj nezapočítává." Foreground="{DynamicResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0,20,0,12"/>
-  <TextBlock Text="Pro trvalé zobrazení přetáhni ikonu BudsConnect z nabídky skrytých ikon na hlavní panel." Foreground="{DynamicResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,16"/>
-  <Button Content="Uložit" Click="Save_Click" Background="{DynamicResource Selected}" Foreground="{DynamicResource Accent}"/>
+  <TextBlock Text="{DynamicResource Loc_Settings}" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,18"/>
+  <CheckBox x:Name="StartupBox" Content="{DynamicResource Loc_Startup}"/>
+  <CheckBox x:Name="TrayBox" Content="{DynamicResource Loc_CloseToTray}"/>
+  <CheckBox x:Name="AlertBox" Content="{DynamicResource Loc_LowAlert}"/>
+  <TextBlock Text="{DynamicResource Loc_Appearance}" Margin="0,18,0,8"/>
+  <ComboBox x:Name="ThemeBox" Padding="8" AutomationProperties.Name="{DynamicResource Loc_AppAppearance}"><ComboBoxItem Content="{DynamicResource Loc_System}" Tag="System"/><ComboBoxItem Content="{DynamicResource Loc_Light}" Tag="Light"/><ComboBoxItem Content="{DynamicResource Loc_Dark}" Tag="Dark"/></ComboBox>
+  <TextBlock Text="{DynamicResource Loc_Language}" Margin="0,18,0,8"/>
+  <ComboBox x:Name="LanguageBox" Padding="8" AutomationProperties.Name="{DynamicResource Loc_Language}"><ComboBoxItem Content="English" Tag="en"/><ComboBoxItem Content="Čeština" Tag="cs"/></ComboBox>
+  <TextBlock Text="{DynamicResource Loc_TrayExplanation}" Foreground="{DynamicResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0,20,0,12"/>
+  <TextBlock Text="{DynamicResource Loc_PinExplanation}" Foreground="{DynamicResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,16"/>
+  <Button Content="{DynamicResource Loc_Save}" Click="Save_Click" Background="{DynamicResource Selected}" Foreground="{DynamicResource Accent}"/>
  </StackPanel>
 </Window>
+
 

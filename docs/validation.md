@@ -1,5 +1,12 @@
 # Ověření první verze (2026-11-11)
 
+## Jazyky 0.3.0 (2026-11-13)
+
+- Přidány English a Čeština, výchozí angličtina i pro starší nastavení bez jazyka. Volba v Settings → Language se uloží do settings.json a aplikuje po Save bez restartu.
+- Přeložena hlavní obrazovka, Mini, rychlý panel, nastavení, popisky pro přístupnost, nabídka ikony, upozornění baterie a vlastní stavové/chybové zprávy aplikace. Názvy zařízení a systémová hlášení Windows se nepřepisují.
+- 436 kontrol prošlo, včetně přepínání již otevřených oken en → cs → en, překladu existujícího stavu/chyby, serializace obou jazyků, přechodu ze starších nastavení a výchozí hodnoty při neplatném jazyku. Vizuálně ověřeny oba jazyky a oba barevné motivy včetně dlouhé chybové zprávy.
+- Stávající testy ANC, protokolu Bluetooth a Mini režimu zůstaly úspěšné; fyzické ANC ani hlasitost se při této úpravě neměnily.
+
 ## Mini režim 0.2.0 (2026-11-13)
 
 - Přidáno tlačítko Mini do spodní řady hlavního okna a návrat pomocí Zvětšit. Přepíná se rozhraní i rozměry stejného okna, bez nového Bluetooth připojení.

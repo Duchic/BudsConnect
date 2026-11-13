@@ -1,6 +1,6 @@
 # BudsConnect
 
-Minimalistická česká aplikace pro **Windows 11 / Windows 10 2004+** a **Galaxy Buds3 (SM-R530)**. Nativní C#/.NET 10, WPF.
+Minimalistická aplikace s anglickým a českým rozhraním pro **Windows 11 / Windows 10 2004+** a **Galaxy Buds3 (SM-R530)**. Nativní C#/.NET 10, WPF.
 
 ## Spuštění
 
@@ -13,6 +13,8 @@ Připravená přenosná verze je ve složce `dist/BudsConnect`. Spusť `BudsConn
 5. Přetáhni ikonu BudsConnect z nabídky skrytých ikon vedle hodin. Windows řídí její viditelnost i pořadí.
 
 ## Funkce
+
+- Výchozí jazyk je **English**. V **Settings → Language** vyber **English** nebo **Čeština** a stiskni **Save**. Jazyk se ihned použije v otevřených oknech, Mini režimu, oznámeních i nabídce u hodin a uloží se pro příští spuštění. Starší nastavení bez položky Language přejde na angličtinu; neznámá hodnota také používá angličtinu.
 
 - Tlačítko **Mini** vedle „Bluetooth ve Windows“ přepne stejné okno do kompaktního režimu (286 × 290 bodů): ikony levého/pravého sluchátka a pouzdra s bateriemi, malý přepínač ANC a hlasitost. **Zvětšit** vrátí původní velikost. Režimy sdílejí připojení i aktuální stav; ANC se zobrazí až po potvrzení sluchátek.
 

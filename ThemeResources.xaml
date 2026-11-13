@@ -33,8 +33,8 @@
      <StackPanel Orientation="Horizontal"><TextBlock x:Name="StateText" Text="—" FontSize="11" VerticalAlignment="Center" Margin="0,0,8,0"/><Border x:Name="Track" Width="32" Height="18" CornerRadius="9" Background="{DynamicResource Line}"><Ellipse x:Name="Knob" Width="12" Height="12" Fill="{DynamicResource Muted}" HorizontalAlignment="Left" Margin="3,0"/></Border></StackPanel>
     </Border>
     <ControlTemplate.Triggers>
-     <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="False"><Setter TargetName="StateText" Property="Text" Value="Vypnuto"/></DataTrigger>
-     <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True"><Setter TargetName="StateText" Property="Text" Value="Zapnuto"/><Setter TargetName="Knob" Property="HorizontalAlignment" Value="Right"/><Setter TargetName="Knob" Property="Fill" Value="{DynamicResource Surface}"/><Setter TargetName="Track" Property="Background" Value="{DynamicResource Accent}"/></DataTrigger>
+     <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="False"><Setter TargetName="StateText" Property="Text" Value="{DynamicResource Loc_Off}"/></DataTrigger>
+     <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True"><Setter TargetName="StateText" Property="Text" Value="{DynamicResource Loc_On}"/><Setter TargetName="Knob" Property="HorizontalAlignment" Value="Right"/><Setter TargetName="Knob" Property="Fill" Value="{DynamicResource Surface}"/><Setter TargetName="Track" Property="Background" Value="{DynamicResource Accent}"/></DataTrigger>
      <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="FocusBorder" Property="BorderBrush" Value="{DynamicResource Accent}"/></Trigger>
      <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="FocusBorder" Property="BorderBrush" Value="{DynamicResource Accent}"/></Trigger>
      <Trigger Property="IsEnabled" Value="False"><Setter Property="Cursor" Value="Arrow"/></Trigger>
@@ -64,4 +64,5 @@
    </Grid><ControlTemplate.Triggers><Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.4"/></Trigger><Trigger Property="IsKeyboardFocused" Value="True"><Setter Property="Background" Value="{DynamicResource Selected}"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
   </Style>
  </ResourceDictionary>
+
 

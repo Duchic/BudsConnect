@@ -58,6 +58,6 @@ public partial class MainWindow : Window
     public static void OpenSettings(string uri)
     {
         try { Process.Start(new ProcessStartInfo(uri) { UseShellExecute = true }); }
-        catch (Exception ex) { MessageBox.Show(ex.Message, "Nastavení Windows"); }
+        catch (Exception ex) { MessageBox.Show(ex.Message, Services.Localization.Get("WindowsSettings")); }
     }
 }
