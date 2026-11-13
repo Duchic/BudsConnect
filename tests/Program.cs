@@ -125,6 +125,7 @@ internal static class Program
         }
         vm.Stop();
         TestAncUi(app);
+        TestMiniUi(app);
     }
     private static void TestAncUi(App app)
     {
@@ -188,8 +189,43 @@ internal static class Program
         for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
         { var child = VisualTreeHelper.GetChild(root, i); if (child is T match) yield return match; foreach (var next in Descendants<T>(child)) yield return next; }
     }
-    private static void Click(System.Windows.Controls.RadioButton button) => typeof(System.Windows.Controls.Primitives.ButtonBase)
+    private static void Click(System.Windows.Controls.Primitives.ButtonBase button) => typeof(System.Windows.Controls.Primitives.ButtonBase)
         .GetMethod("OnClick", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.Invoke(button, null);
+    private static void TestMiniUi(App app)
+    {
+        var device = new FakeBudsService();
+        var vm = new MainViewModel(device, new Preferences());
+        var main = new MainWindow(vm);
+        var mini = (System.Windows.Controls.Button)main.FindName("MiniButton");
+        var expand = (System.Windows.Controls.Button)main.FindName("ExpandButton");
+        var toggle = (System.Windows.Controls.Button)main.FindName("MiniAnc");
+        foreach (bool dark in new[] { false, true })
+        {
+            ThemePalette.Apply(app.Resources, dark);
+            device.Emit(new(true, Left: 86, Right: 82, Case: 64, Anc: false, Status: "Připojeno · Bluetooth")); Drain();
+            Click(mini); Drain();
+            Check(main.IsMiniMode && main.Width == 286 && main.Height == 290, "Mini button shrinks the same window");
+            RenderWindow(main, 270, 251, $"Mini-off-{(dark ? "dark" : "light")}");
+            Check(((System.Windows.Controls.TextBlock)main.FindName("MiniLeft")).Text == "86 %" &&
+                  ((System.Windows.Controls.TextBlock)main.FindName("MiniRight")).Text == "82 %" &&
+                  ((System.Windows.Controls.TextBlock)main.FindName("MiniCase")).Text == "64 %", "Mini batteries share live state");
+            var text = (System.Windows.Controls.TextBlock)toggle.Template.FindName("StateText", toggle);
+            Check(text.Text == "Vypnuto", "Mini switch indicates confirmed off state");
+            Click(toggle); Drain();
+            Check(!toggle.IsEnabled && text.Text == "Vypnuto", "Mini switch waits for confirmation");
+            device.Acknowledge(true); Drain();
+            Check(toggle.IsEnabled && text.Text == "Zapnuto", "Mini switch updates after confirmed ANC change");
+            RenderWindow(main, 270, 251, $"Mini-on-{(dark ? "dark" : "light")}");
+            Click(expand); Drain();
+            Check(!main.IsMiniMode && main.Width == 440 && main.Height == 650, "Expand restores classic size");
+            Check(vm.AncOn, "Changing layout retains current ANC state");
+            Click(mini); Drain(); device.Emit(new()); Drain();
+            Check(!toggle.IsEnabled && text.Text == "—", "Mini switch does not label unknown ANC as off");
+            Check(((System.Windows.Controls.TextBlock)main.FindName("MiniLeft")).Text == "—", "Disconnected mini batteries are unavailable");
+            Click(expand); Drain();
+        }
+        vm.Stop();
+    }
     private static void Drain()
     {
         var frame = new System.Windows.Threading.DispatcherFrame();

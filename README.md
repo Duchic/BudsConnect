@@ -14,6 +14,8 @@ Připravená přenosná verze je ve složce `dist/BudsConnect`. Spusť `BudsConn
 
 ## Funkce
 
+- Tlačítko **Mini** vedle „Bluetooth ve Windows“ přepne stejné okno do kompaktního režimu (286 × 290 bodů): ikony levého/pravého sluchátka a pouzdra s bateriemi, malý přepínač ANC a hlasitost. **Zvětšit** vrátí původní velikost. Režimy sdílejí připojení i aktuální stav; ANC se zobrazí až po potvrzení sluchátek.
+
 - Skutečné hodnoty baterie levého a pravého sluchátka a pouzdra, pokud je zařízení poskytne.
 - Číselná ikona u hodin: nižší dostupná baterie sluchátek; při odpojení pomlčka. Detail po najetí, rychlý panel po kliknutí.
 - ANC zapnuto/vypnuto, s potvrzením od sluchátek a chybou při neúspěchu.

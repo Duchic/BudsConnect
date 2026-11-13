@@ -1,5 +1,12 @@
 # Ověření první verze (2026-11-11)
 
+## Mini režim 0.2.0 (2026-11-13)
+
+- Přidáno tlačítko Mini do spodní řady hlavního okna a návrat pomocí Zvětšit. Přepíná se rozhraní i rozměry stejného okna, bez nového Bluetooth připojení.
+- Kompaktní rozhraní sdílí baterie, hlasitost, potvrzený ANC, stav připojení a chyby s klasickým oknem. Nedostupný ANC je označen pomlčkou a ovládání se vypne.
+- 187 automatických kontrol prošlo, včetně přepnutí rozměrů, návratu do původní velikosti, skutečných click handlerů Mini/Zvětšit/ANC s náhradní službou, baterií, potvrzení ANC a odpojení v obou motivech. Zvukový výstup nebyl při testech měněn.
+- Vizuálně ověřeno malé i klasické rozhraní a umístění tlačítka Mini vedle Bluetooth ve Windows. Ošetřeno rozbalení okna u okraje pracovní oblasti monitoru; ruční ověření více monitorů s různým DPI nadále zbývá.
+
 ## Oprava příjmu potvrzení ANC 0.1.3 — ověřeno na fyzických Buds3
 
 - Předchozí oprava 0.1.2 nestačila: univerzální ACK sice uměla interpretovat, ale parser ho předtím zahodil kvůli vysokým bitům hlavičky. Skutečné zachycené odpovědi mají hlavičky 0x9005 a 0xD005.
