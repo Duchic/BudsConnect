@@ -84,6 +84,7 @@ internal static class Program
             Check(!BluetoothBudsService.IsBuds3("Galaxy Buds3 Pro") && !BluetoothBudsService.IsBuds3("Galaxy Buds3 FE"), "Other models excluded");
             Check(BluetoothBudsService.DescribeError(new System.Runtime.InteropServices.COMException("busy", unchecked((int)0x80072740))).Contains("jiná aplikace"), "Busy Bluetooth socket has actionable error");
             if (args.Contains("--render")) Render();
+            else if (args.Contains("--screenshots")) RenderScreenshots();
             if (args.Contains("--probe")) Probe();
             if (args.Contains("--diagnose-anc")) DiagnoseAnc();
             Console.WriteLine($"PASS: {count} checks"); return 0;
@@ -130,6 +131,35 @@ internal static class Program
         TestMiniUi(app);
         TestLanguages(app);
         TestDeviceAlias(app);
+    }
+    private static void RenderScreenshots()
+    {
+        var app = new TestApp();
+        app.Resources = new ResourceDictionary { Source = new Uri("pack://application:,,,/BudsConnect;component/ThemeResources.xaml") };
+        Localization.Apply("en");
+        var device = new FakeBudsService();
+        var preferences = new Preferences { Language = "en", Theme = "Light", DeviceAlias = "My Galaxy Buds3" };
+        var vm = new MainViewModel(device, preferences);
+        device.Emit(new(true, Left: 86, Right: 82, Case: 64, Anc: true,
+            Updated: DateTimeOffset.Now, Status: "Připojeno · Bluetooth")); Drain();
+        var main = new MainWindow(vm);
+        foreach (bool dark in new[] { false, true })
+        {
+            ThemePalette.Apply(app.Resources, dark);
+            main.SetMiniMode(false);
+            RenderWindow(main, 424, 611, dark ? "readme-main-dark" : "readme-main-light");
+            if (dark)
+            {
+                main.SetMiniMode(true);
+                RenderWindow(main, 270, 251, "readme-mini-dark");
+            }
+        }
+        ThemePalette.Apply(app.Resources, false);
+        var settings = new SettingsWindow(vm);
+        var root = (FrameworkElement)settings.Content;
+        root.Measure(new Size(404, double.PositiveInfinity));
+        RenderWindow(settings, 404, (int)Math.Ceiling(root.DesiredSize.Height), "readme-settings-light");
+        vm.Stop();
     }
     private static void TestDeviceAlias(App app)
     {
