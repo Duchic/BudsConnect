@@ -131,6 +131,39 @@ internal static class Program
         TestMiniUi(app);
         TestLanguages(app);
         TestDeviceAlias(app);
+        TestDisconnectedLayout(app);
+    }
+    private static void TestDisconnectedLayout(App app)
+    {
+        var service = new FakeBudsService();
+        var vm = new MainViewModel(service, new Preferences());
+        vm.Stop();
+        // Cover the extra volume hint even on a PC with the earbuds selected as output.
+        typeof(MainViewModel).GetField("volume", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.SetValue(vm, null);
+        var main = new MainWindow(vm);
+        var scroll = (System.Windows.Controls.ScrollViewer)main.FindName("ClassicView");
+        var mini = (System.Windows.Controls.Button)main.FindName("MiniButton");
+        foreach (string language in new[] { "cs", "en" })
+        {
+            Localization.Apply(language);
+            foreach (bool dark in new[] { false, true })
+            {
+                ThemePalette.Apply(app.Resources, dark);
+                double? previousBottom = null;
+                foreach (string status in new[] { "Searching", "NotPaired", "Retrying", "ConnectionLost", "ConnectionBusy", "BluetoothUnavailable" })
+                {
+                    service.Emit(new(false, Status: Localization.Get(status))); Drain();
+                    RenderWindow(main, 424, 611, $"Disconnected-{language}-{dark}-{status}");
+                    Check(scroll.ComputedVerticalScrollBarVisibility == Visibility.Collapsed && scroll.ScrollableHeight < 0.5,
+                        $"Disconnected {status} fits without scrolling ({language}, dark={dark})");
+                    double bottom = mini.TranslatePoint(new Point(0, mini.ActualHeight), (UIElement)main.Content).Y;
+                    Check(bottom <= 611 && mini.ActualHeight > 0, "Bottom controls remain inside the window");
+                    Check(!previousBottom.HasValue || Math.Abs(previousBottom.Value - bottom) < 0.5,
+                        "Changing the connection status keeps the controls in place");
+                    previousBottom = bottom;
+                }
+            }
+        }
     }
     private static void RenderScreenshots()
     {

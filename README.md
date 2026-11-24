@@ -6,6 +6,12 @@ Check your earbud batteries beside the Windows clock, switch noise cancellation,
 
 Built with **C# · .NET 10 · WPF**. Available in **English and Czech**.
 
+## Download
+
+Download [BudsConnect 0.3.2 for Windows x64](https://github.com/Duchic/BudsConnect/releases/download/v0.3.2/BudsConnect-0.3.2-win-x64.zip), extract the ZIP, and run `BudsConnect.exe`. The .NET runtime is included.
+
+Version 0.3.2 fixes the scrollbar appearing when the disconnected status changes between one and two lines. See the [release notes](https://github.com/Duchic/BudsConnect/releases/tag/v0.3.2).
+
 ## Screenshots
 
 Actual application views rendered with sample battery and connection data.
